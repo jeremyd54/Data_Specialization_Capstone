@@ -6,8 +6,4 @@ download.file(dataUrl, destfile = "data.zip")
 unzip("data.zip")
 
 
-## Make text collections
-eng <- Corpus(DirSource("./final/en_US"),
-              readerControl = list(reader = readPlain, language = "en_US",
-                                   load = TRUE))
             
