@@ -8,7 +8,7 @@ dataUrl <- "https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-S
 download.file(dataUrl, destfile = "data.zip")
 unzip("data.zip")
 
-#Read in data and transform into long format
+#Read in data and transform into tall format
 
 twitLines <- readLines("./final/en_US/en_US.twitter.txt")
 twit <- tibble(entry = 1:length(twitLines), text = twitLines) %>%
