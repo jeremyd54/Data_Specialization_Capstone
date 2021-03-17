@@ -52,7 +52,17 @@ twitComP2 <- twitCommonStop %>%
     geom_col(fill = "red")
 grid.arrange(twitComP1,twitComP2, nrow = 1, 
              top = "Most Common Twitter Words")
-
+#Blogs
+blogComP1 <- blogCommon %>%
+    filter(n > 218000) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(n, word)) + ggtitle("With Stop Words") + 
+    geom_col(fill = "blue")
+blogComP2 <- blogCommonStop %>%
+    filter(n > 21400) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(n, word)) + ggtitle("Stop Words Removed") + 
+    geom_col(fill = "red")
 
 
 
