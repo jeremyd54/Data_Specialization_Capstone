@@ -63,8 +63,45 @@ blogComP2 <- blogCommonStop %>%
     mutate(word = reorder(word, n)) %>%
     ggplot(aes(n, word)) + ggtitle("Stop Words Removed") + 
     geom_col(fill = "red")
+grid.arrange(blogComP1, blogComP2, nrow = 1, 
+             top = "Most Common Blog Words")
+#News
+newsComP1 <- newsCommon %>%
+    filter(n > 11600) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(n, word)) + ggtitle("With Stop Words") +
+    geom_col(fill = "blue")
+newsComP2 <- newsCommonStop %>%
+    filter(n > 1797) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(n, word)) + ggtitle("Stop Words Removed") +
+    geom_col(fill = "red")
+grid.arrange(newsComP1, newsComP2, nrow = 1,
+             top = "Most Common News Words")
+
+## Clear out RAM space
+save(blog, news, twit, file = "sources.RData")
+save(blogCommon, newsCommon, twitCommon, file = "common.RData")
+save(blogCommonStop, newsCommonStop, twitCommonStop, file = "commonNoStop.RData")
+rm(blogCommonStop, newsCommonStop, twitCommonStop,
+   blogCommon, newsCommon, twitCommon, blog, news, twit)
+
+### Bi-Grams
+
+## Twitter
+twitBi <- tibble(entry = 1:length(twitLines), text = twitLines) %>%
+    unnest_tokens(bigram, text, token = "ngrams", n = 2) %>%
+    separate(bigram, c("word1", "word2"), sep = " ") %>%
+    filter(!word1 %in% stop_words$word, !word2 %in% stop_words$word)
+twitBiCom <- twitBi %>% 
+    count(word1, word2, sort = TRUE) %>%
+    unite(bigram, word1, word2, sep = " ")
+twitBiPlot <- twitBiCom %>%
+    filter
 
 
+blogBi <- tibble(entry = 1:length(blogLines), text = blogLines) %>%
+    unnest_tokens(bigram, text, token = "ngrams", n = 2) 
 
-
-
+newsBi <- tibble(entry = 1:length(newsLines), text = newsLines) %>%
+    unnest_tokens(bigram, text, token = "ngrams", n = 2)
