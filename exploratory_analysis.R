@@ -127,7 +127,6 @@ save(blogBi, file = "blogBi.RData")
 blogBiCom <- blogBi %>%
     count(word1, word2, sort = TRUE) %>%
     unite(bigram, word1, word2, sep = " ")
-blogBiCom <- blogBiCom[grep("^[0-9a-z ]+$")]
 #Clear space and view
 rm(blogBi)
 head(blogBiCom, n = 10)
@@ -136,10 +135,11 @@ blogBiCom <- blogBiCom[grep("^[0-9a-z ]+$", blogBiCom$bigram), ]
 head(blogBiCom, n = 20)
 #Plot
 blogBiPlot <- blogBiCom %>%
-    filter(n > 540) %>%
+    filter(n > 840) %>%
     mutate(bigram = reorder(bigram, n)) %>%
     ggplot(aes(n, bigram)) + ggtitle("Blogs") +
     geom_col(fill = "red")
+save(blogBiCom, file = "blogBiCom.RData")
 rm(blogBiCom)
 
 ## News
@@ -150,4 +150,24 @@ newsBi <- tibble(text = newsLines) %>%
     separate(bigram, c("word1", "word2"), sep = " ") %>%
     filter(!word1 %in% stop_words$word, !word2 %in% stop_words$word)
 save(newsBi, file = "newsBi.RData")
+#Count common and clear
+newsBiCom <- newsBi %>%
+    count(word1, word2, sort = TRUE) %>%
+    unite(bigram, word1, word2, sep = " ")
+#View and clear space
+head(newsBiCom, n = 10)
+rm(newsBi)
+#Remove non-characters
+newsBiCom <- newsBiCom[grep("^[0-9a-z ]+$", newsBiCom$bigram), ]
+head(newsBiCom, n = 20)
+save(newsBiCom, file = "newsBiCom.RDAta")
+#Plot
+newsBiPlot <- newsBiCom %>%
+    filter(n > 126) %>%
+    mutate(bigram = reorder(bigram, n)) %>%
+    ggplot(aes(n, bigram)) + ggtitle("News") +
+    geom_col(fill = "red")
 
+## Plot together
+grid.arrange(twitBiPlot, blogBiPlot, newsBiPlot, nrow = 1,
+             top = "Common Bi-Grams")
