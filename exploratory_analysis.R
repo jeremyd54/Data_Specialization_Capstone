@@ -89,15 +89,32 @@ rm(blogCommonStop, newsCommonStop, twitCommonStop,
 ### Bi-Grams
 
 ## Twitter
+#Make data frame
 twitBi <- tibble(entry = 1:length(twitLines), text = twitLines) %>%
     unnest_tokens(bigram, text, token = "ngrams", n = 2) %>%
     separate(bigram, c("word1", "word2"), sep = " ") %>%
     filter(!word1 %in% stop_words$word, !word2 %in% stop_words$word)
+#Save to disc
+save(twitBi, file = "twitBi.RData")
+#Count commons
 twitBiCom <- twitBi %>% 
     count(word1, word2, sort = TRUE) %>%
     unite(bigram, word1, word2, sep = " ")
+#Clear space and look
+rm(twitBi)
+head(twitBiCom, n = 20)
+#Remove non-characters and view
+twitBiCom <- twitBiCom[grep("^[0-9a-z ]+$", twitBiCom$bigram), ]
+head(twitBiCom, n = 20)
+#Plot
 twitBiPlot <- twitBiCom %>%
-    filter
+    filter(n > 1314) %>%
+    mutate(bigram = reorder(bigram, n)) %>%
+    ggplot(aes(n, bigram)) + ggtitle("Twitter") +
+    geom_col(fill = "red")
+#Save and remove
+save(twitBiCom, file = "twitBiCom.RData")
+rm(twitBiCom)
 
 
 blogBi <- tibble(entry = 1:length(blogLines), text = blogLines) %>%
