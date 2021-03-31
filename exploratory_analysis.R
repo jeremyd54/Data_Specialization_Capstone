@@ -167,6 +167,7 @@ newsBiPlot <- newsBiCom %>%
     mutate(bigram = reorder(bigram, n)) %>%
     ggplot(aes(n, bigram)) + ggtitle("News") +
     geom_col(fill = "red")
+rm(newsBiCom)
 
 ## Plot together
 grid.arrange(twitBiPlot, blogBiPlot, newsBiPlot, nrow = 1,
