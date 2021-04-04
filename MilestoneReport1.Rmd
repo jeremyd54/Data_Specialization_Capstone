@@ -106,6 +106,8 @@ newsComP2 <- newsCommonStop %>%
     mutate(word = reorder(word, n)) %>%
     ggplot(aes(n, word)) + ggtitle("Stop Words Removed") +
     geom_col(fill = "red")
+rm(blogCommonStop, newsCommonStop, twitCommonStop,
+   blogCommon, newsCommon, twitCommon, blog, news, twit)
 grid.arrange(twitComP1,twitComP2, nrow = 1, 
              top = "Most Common Twitter Words")
 grid.arrange(blogComP1, blogComP2, nrow = 1, 
@@ -118,8 +120,49 @@ With stop word, the sources have more or less the same top-20 list. Other common
 
 ## Bi-Grams
 
-Another thing I looked at was so-called bi-grams. Bi-grams are two words grouped together. These will most likely be extremely useful in generating the prediction algorithm. When looking at these bi-grams, I removed stop words and non-English alphabet characters. Below are the top-20 bi-grams in the three sources.
+Another part of the data I looked at was so-called bi-grams. Bi-grams are simple two words grouped together. These will most likely be extremely useful in generating the prediction algorithm. When looking at these bi-grams, I removed stop words and non-English alphabet characters. Below are the top-20 bi-grams in the three sources.
 
+```{r twitBi}
+twitBi <- tibble(entry = 1:length(twitLines), text = twitLines) %>%
+    unnest_tokens(bigram, text, token = "ngrams", n = 2) %>%
+    separate(bigram, c("word1", "word2"), sep = " ") %>%
+    filter(!word1 %in% stop_words$word, !word2 %in% stop_words$word)
+twitBiCom <- twitBi %>% 
+    count(word1, word2, sort = TRUE) %>%
+    unite(bigram, word1, word2, sep = " ")
+rm(twitBi)
+twitBiCom <- twitBiCom[grep("^[0-9a-z ]+$", twitBiCom$bigram), ]
+twitBiPlot <- twitBiCom %>%
+    filter(n > 1314) %>%
+    mutate(bigram = reorder(bigram, n)) %>%
+    ggplot(aes(n, bigram)) + ggtitle("Twitter") +
+    geom_col(fill = "red")
+rm(twitBiCom)
+```
 
+```{r blogBi}
+load("blogBiCom.RData")
+blogBiPlot <- blogBiCom %>%
+    filter(n > 840) %>%
+    mutate(bigram = reorder(bigram, n)) %>%
+    ggplot(aes(n, bigram)) + ggtitle("Blogs") +
+    geom_col(fill = "red")
+rm(blogBiCom)
+```
+
+```{r newsBi}
+load("newsBiCom.RDAta")
+newsBiPlot <- newsBiCom %>%
+    filter(n > 126) %>%
+    mutate(bigram = reorder(bigram, n)) %>%
+    ggplot(aes(n, bigram)) + ggtitle("News") +
+    geom_col(fill = "red")
+rm(newsBiCom)
+```
+
+```{r biPlots}
+grid.arrange(twitBiPlot, blogBiPlot, newsBiPlot, nrow = 1,
+             top = "Common Bi-Grams")
+```
 
 
