@@ -8,25 +8,41 @@ output: html_document
 knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(cache = TRUE)
 library(lemon)
+library(tm)
+library(dplyr)
+library(tidyr)
+library(tidytext)
+library(ggplot2)
+library(gtable)
+library(gridExtra)
 knit_print.data.frame <- lemon_print
 ```
 
-## R Markdown
+## Introduction
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+This paper is the initial report for the Coursera Data Science Specialization capstone project offered through John Hopkins University. The purpose of the project is to create a prediction algorithm and ultimately an app that takes a word, or words, as inputs and predicts a word to come after. There are three data sets that will be used to train this algorithm. The sources for these data sets are Twitter, blogs, and news sites. This paper will be covering the downloading, pre-processing, and conducting exploratory analysis on the data. All code that was used can be found in the Appendix.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+## Downloading and Pre-processing
 
-```{r cars}
-summary(cars)
+The data sets can be found at: https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip. After downloading, the zip file was decompressed and was made available. Pre-processing was simply converting the word-sets into a "tall" format. That is, they were saved (or tokenized) in a data frame in which each row contained only one or two words. The R package "tidytext" was used to do this and utilized through the rest of this analysis.
+
+```{r pre, warning=FALSE}
+
+twitLines <- readLines("./final/en_US/en_US.twitter.txt")
+twit <- tibble(entry = 1:length(twitLines), text = twitLines) %>%
+    unnest_tokens(word, text)
+
+blogLines <- readLines("./final/en_US/en_US.blogs.txt")
+blog <- tibble(entry = 1:length(blogLines), text = blogLines) %>%
+    unnest_tokens(word, text)
+
+newsLines <- readLines("./final/en_US/en_US.news.txt")
+news <- tibble(entry = 1:length(newsLines), text = newsLines) %>%
+    unnest_tokens(word, text)
+
 ```
 
-## Including Plots
+## Common Words
 
-You can also embed plots, for example:
+The first point of interest in my exploratory analysis is finding the most common words in each of the data sets. This is an easy process in tidytext with the count() function.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
