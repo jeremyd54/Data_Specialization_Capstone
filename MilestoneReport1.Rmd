@@ -7,6 +7,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(cache = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
 library(lemon)
 library(tm)
 library(dplyr)
@@ -26,7 +28,7 @@ This paper is the initial report for the Coursera Data Science Specialization ca
 
 The data sets can be found at: https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip. After downloading, the zip file was decompressed and was made available. Pre-processing was simply converting the word-sets into a "tall" format. That is, they were saved (or tokenized) in a data frame in which each row contained only one or two words. The R package "tidytext" was used to do this and utilized through the rest of this analysis.
 
-```{r pre, warning=FALSE}
+```{r pre}
 
 twitLines <- readLines("./final/en_US/en_US.twitter.txt")
 twit <- tibble(entry = 1:length(twitLines), text = twitLines) %>%
@@ -44,5 +46,80 @@ news <- tibble(entry = 1:length(newsLines), text = newsLines) %>%
 
 ## Common Words
 
-The first point of interest in my exploratory analysis is finding the most common words in each of the data sets. This is an easy process in tidytext with the count() function.
+The first point of interest in my exploratory analysis is finding the most common words in each of the data sets. This is an easy process in tidytext with the count() function. 
+
+```{r caption="Top 10 Twitter Words", render=lemon_print}
+twitCommon <- twit %>%
+    count(word, sort = TRUE)
+head(twitCommon, n = 10)
+```
+
+Unsurprisingly, the most common words are "and", "the, "to", etc. These are called stop words and will not be very useful for predictions. Here's twitter again with stop words removed:
+
+```{r caption="Twitter Without Stop Words", render=lemon_print}
+twitCommonStop <- twit %>%
+    anti_join(stop_words) %>%
+    count(word, sort = TRUE)
+head(twitCommonStop, n = 10)
+```
+
+"Love" is the most common word on Twitter. Also on the list are "rt" (short for re-tweet) and "lol" are also on the list and these may not be useful for5 predictions and perhaps should be removed down the road. The top-20 words for each source are shown below.
+
+```{r commonPlots}
+blogCommon <- blog %>%
+    count(word, sort = TRUE)
+blogCommonStop <- blog %>%
+    anti_join(stop_words) %>%
+    count(word, sort = TRUE)
+newsCommon <- news %>%
+    count(word, sort = TRUE)
+newsCommonStop <- news %>%
+    anti_join(stop_words) %>%
+    count(word, sort = TRUE)
+twitComP1 <- twitCommon %>% 
+    filter(n > 168000) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(n, word)) + ggtitle("With Stop Words") +
+    geom_col(fill = "blue")   
+twitComP2 <- twitCommonStop %>%
+    filter(n > 28450) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(n, word)) + ggtitle("Stop Words Removed") +
+    geom_col(fill = "red")
+blogComP1 <- blogCommon %>%
+    filter(n > 218000) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(n, word)) + ggtitle("With Stop Words") + 
+    geom_col(fill = "blue")
+blogComP2 <- blogCommonStop %>%
+    filter(n > 21400) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(n, word)) + ggtitle("Stop Words Removed") + 
+    geom_col(fill = "red")
+newsComP1 <- newsCommon %>%
+    filter(n > 11600) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(n, word)) + ggtitle("With Stop Words") +
+    geom_col(fill = "blue")
+newsComP2 <- newsCommonStop %>%
+    filter(n > 1797) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(n, word)) + ggtitle("Stop Words Removed") +
+    geom_col(fill = "red")
+grid.arrange(twitComP1,twitComP2, nrow = 1, 
+             top = "Most Common Twitter Words")
+grid.arrange(blogComP1, blogComP2, nrow = 1, 
+             top = "Most Common Blog Words")
+grid.arrange(newsComP1, newsComP2, nrow = 1,
+             top = "Most Common News Words")
+```
+
+With stop word, the sources have more or less the same top-20 list. Other common occurrences among all three sources is the letter "a" with a hat accent, suggesting a non-English character, and numbers. Removing these should definitely be considered.
+
+## Bi-Grams
+
+Another thing I looked at was so-called bi-grams. Bi-grams are two words grouped together. These will most likely be extremely useful in generating the prediction algorithm. When looking at these bi-grams, I removed stop words and non-English alphabet characters. Below are the top-20 bi-grams in the three sources.
+
+
+
 
