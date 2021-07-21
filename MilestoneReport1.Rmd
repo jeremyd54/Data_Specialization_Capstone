@@ -26,7 +26,7 @@ This paper is the initial report for the Coursera Data Science Specialization ca
 
 ## Downloading and Pre-processing
 
-The data sets can be found at: https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip. After downloading, the zip file was decompressed and was made available. Pre-processing was simply converting the word-sets into a "tall" format. That is, they were saved (or tokenized) in a data frame in which each row contained only one or two words. The R package "tidytext" was used to do this and utilized through the rest of this analysis.
+The data sets can be found at: https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip. After downloading, the zip file was decompressed and made available. Pre-processing was simply converting the word-sets into a "tall" format. That is, they were saved (or tokenized) in a data frame in which each row contained only one or two words. The R package "tidytext" was used to do this and utilized through the rest of this analysis.
 
 ```{r pre}
 
@@ -63,7 +63,7 @@ twitCommonStop <- twit %>%
 head(twitCommonStop, n = 10)
 ```
 
-"Love" is the most common word on Twitter. Also on the list are "rt" (short for re-tweet) and "lol" are also on the list and these may not be useful for5 predictions and perhaps should be removed down the road. The top-20 words for each source are shown below.
+"Love" is the most common word on Twitter. Also on the list are "rt" (short for re-tweet) and "lol" and these may not be useful for predictions and perhaps should be removed down the road. The top-20 words for each source are shown below.
 
 ```{r commonPlots}
 blogCommon <- blog %>%
@@ -116,22 +116,14 @@ grid.arrange(newsComP1, newsComP2, nrow = 1,
              top = "Most Common News Words")
 ```
 
-With stop word, the sources have more or less the same top-20 list. Other common occurrences among all three sources is the letter "a" with a hat accent, suggesting a non-English character, and numbers. Removing these should definitely be considered.
+With stop words, the sources have more or less the same top-20 list. Other common occurrences among all three sources are numbers and the letter "a" with a hat accent, suggesting a non-English character. Removing these should definitely be considered.
 
 ## Bi-Grams
 
-Another part of the data I looked at was so-called bi-grams. Bi-grams are simple two words grouped together. These will most likely be extremely useful in generating the prediction algorithm. When looking at these bi-grams, I removed stop words and non-English alphabet characters. Below are the top-20 bi-grams in the three sources.
+Another part of the data I looked at was so-called bi-grams. Bi-grams are simply two words grouped together. These will most likely be extremely useful in generating the prediction algorithm. When looking at these bi-grams, I removed stop words and non-English alphabet characters. Below are the top-20 bi-grams in the three sources.
 
 ```{r twitBi}
-twitBi <- tibble(entry = 1:length(twitLines), text = twitLines) %>%
-    unnest_tokens(bigram, text, token = "ngrams", n = 2) %>%
-    separate(bigram, c("word1", "word2"), sep = " ") %>%
-    filter(!word1 %in% stop_words$word, !word2 %in% stop_words$word)
-twitBiCom <- twitBi %>% 
-    count(word1, word2, sort = TRUE) %>%
-    unite(bigram, word1, word2, sep = " ")
-rm(twitBi)
-twitBiCom <- twitBiCom[grep("^[0-9a-z ]+$", twitBiCom$bigram), ]
+load("twitBiCom.RData")
 twitBiPlot <- twitBiCom %>%
     filter(n > 1314) %>%
     mutate(bigram = reorder(bigram, n)) %>%
@@ -165,11 +157,11 @@ grid.arrange(twitBiPlot, blogBiPlot, newsBiPlot, nrow = 1,
              top = "Common Bi-Grams")
 ```
 
-These graphs show the most common two-word combinations and most of them will be fairly good predictors. In the blogs set, a number followed by "minutes" or two numbers are half of the top-20 further demonstrating that removing numbers could be a useful tools going forward.
+These graphs show the most common two-word combinations and most of them will be fairly good predictors. In the blogs set, a number followed by "minutes" or two numbers are half of the top-20 further demonstrating that removing numbers could be a useful tool going forward.
 
 ## Building A Model
 
-I plan to build a model on these word sources by first removing the non-English characters and perhaps numbers as well. Then, starting with bi-grams, I will use the first word as input and the second as a response. Using machine learning, I will fit models to see which has the best accuracy on a test sets. Then I will expand on the model with tri-grams and so on.
+I plan to build a model on these word sources by first removing the non-English characters and perhaps numbers as well. Then, starting with bi-grams, I will use the first word as input and the second as a response. Using machine learning, I will fit models to see which has the best accuracy on test sets. Then I will expand on the model with tri-grams and so on.
 
 
 ## Appendex
@@ -178,7 +170,7 @@ A special thanks to the people at https://www.tidytextmining.com/tidytext.html. 
 
 ### A Note On Memory
 
-Since the data set were quite large, some operations took a very long time. With 16 Gb of RAM, retaining all the data objects caused the memory to overfill. Thus, the code contains saving data frames to the disc and removing them for memory. This also also them to be reloaded quickly in the future.
+Since the data set were quite large, some operations took a very long time. With 16 Gb of RAM, retaining all the data objects caused the memory to overfill. Thus, the code contains saving data frames to the disc and removing them for memory. This also allows them to be reloaded quickly in the future.
 
 ### Code Book
 
