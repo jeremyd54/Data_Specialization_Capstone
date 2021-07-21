@@ -34,7 +34,6 @@ newsCommon <- news %>%
 head(newsCommon, n = 20)
 #Remove stop words
 newsCommonStop <- news %>%
-    anti_join(stop_words) %>%
     count(word, sort = TRUE)
 head(newsCommonStop, n = 20)
 
