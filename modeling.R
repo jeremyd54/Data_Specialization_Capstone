@@ -5,6 +5,7 @@ library(tidytext)
 library(textclean)
 library(stringr)
 
+##Create a full Corpus to model from later
 
 ## Download data
 dataUrl <- "https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip"
