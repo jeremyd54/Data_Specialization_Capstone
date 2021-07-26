@@ -165,9 +165,18 @@ findZr <- function(NrCount){
   cbind(NrCount, Zr)
 }
 
+uniNr <- findZr(uniNr)
+biNr <- findZr(biNr)
+triNr <- findZr(triNr)
+quadNr <- findZr(quadNr)
+    
+##Fit a linear model (in log space) log(Zr) = a + b * log(c)
+LMZr <- function(ZrFrame){
+  lm(log(Zr) ~ log(c), data = ZrFrame)
+}
 
-
-
-
-
+uniFit <- LMZr(uniNr)
+biFit <- LMZr(biNr)
+triFit <- LMZr(triNr)
+quadFit <- LMZr(quadNr)
 
