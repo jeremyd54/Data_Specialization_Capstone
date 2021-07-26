@@ -4,6 +4,7 @@ library(tidyr)
 library(tidytext)
 library(textclean)
 library(stringr)
+library(data.table)
 
 ##Katz model with and without stop-words
 
@@ -111,6 +112,7 @@ if(!file.exists("counts.rda")) {
   load("unis.rda")  
   load("bis.rda")
   load("tris.rda")
+  #Use above function to count the frequencies of the data tables
   uniCount <- countFreq(uni)
   uniCountStop <- countFreq(uniStop)
   biCount <- countFreq(bi)
@@ -120,26 +122,65 @@ if(!file.exists("counts.rda")) {
   quadCount <- countFreq(quad)
   quadCountStop <- countFreq(quadStop)
   ##Save for later and clear space
-  save(uniCount, biCount, triCount, quadCount, file = "counts.rda")
+  save(uniCount, biCount, triCount, quadCount, file = "counts.rda") #Save for later
   save(uniCountStop, biCountStop, triCountStop, quadCountStop, 
        file = "countsStop.rda")
-  rm(uniCountStop, biCountStop, triCountStop, quadCountStop,     
-     uni, bi, tri, quad, uniStop, biStop, triStop, quadStop)
+  rm(uniCountStop, biCountStop, triCountStop, quadCountStop,  #Remove unneeded data 
+     uni, bi, tri, quad, uniStop, biStop, triStop, quadStop)  #data frames
 } else {load("counts.rda")}
 
-##
 
 
+##Use Good-Turing Smoothing on the data
+##Inspiration for code: https://rpubs.com/leomak/TextPrediction_Implementation
+
+#Count the frequency of frequencies (N_r)
+countNr <- function(freq) {
+  freqTable <- table(freq[ ,"n"])
+  return((data.frame(cbind(c = as.numeric(names(freqTable)), 
+                           Nr = as.numeric(freqTable))))
+         )
+}
+##Start with stop words still in data sets
+uniNr <- countNr(uniCount)
+biNr <- countNr(biCount)
+triNr <- countNr(triCount)
+quadNr <- countNr(quadCount)
+
+##Zr = Nr/.5(t-q)
+findZr <- function(NrCount){
+  size <- nrow(NrCount)
+  r <- 2:size-1
+    if(r == 1){                               #q = 0, Zr = Nr/.5t or 2Nr/t
+      NrCount[r] <- mutate(NrCount[r], Zr = (2*Nr/NrCount[r+1,1]))
+    }
+    else if (r == size){                      #t = 2r - q, Zr = Nr/(r-q)
+      NrCount[r] <- mutate(NrCount[r], Zr = (Nr/(c - NrCount[r-1,1])))
+    }
+    else{                                      #Zr=Nr/(0.5(t-q))
+      NrCount[r] <- mutate(NrCount[r], 
+                           Zr = (2*Nr/(NrCount[r+1,1]) - NrCount[r-1,1]))
+    }
+  
+}
 
 
-
-
-
-
-
-
-
-
+findZr <- function(NrCount){
+  size <- nrow(NrCount)
+  Zr <- as.numeric()
+  for(r in 1:size){ 
+    if(r == 1){                               #q = 0, Zr = Nr/.5t or 2Nr/t
+    Zr[r] <- 2*NrCount[r,2]/NrCount[r+1,1]
+    }
+    else if (r == size){                      #t = 2r - q, Zr = Nr/(r-q)
+      Zr[r] <- NrCount[r,2]/(NrCount[r,1] - NrCount[(r-1),1])
+    }
+    else{                                      #Zr=Nr/(0.5(t-q))
+      Zr[r] <- 2*NrCount[r,2]/(NrCount[r+1,1] - NrCount[r-1,1])
+    }
+  }
+  cbind(NrCount, Zr)
+}
 
 
 
