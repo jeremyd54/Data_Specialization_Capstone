@@ -150,32 +150,15 @@ quadNr <- countNr(quadCount)
 ##Zr = Nr/.5(t-q)
 findZr <- function(NrCount){
   size <- nrow(NrCount)
-  r <- 2:size-1
-    if(r == 1){                               #q = 0, Zr = Nr/.5t or 2Nr/t
-      NrCount[r] <- mutate(NrCount[r], Zr = (2*Nr/NrCount[r+1,1]))
-    }
-    else if (r == size){                      #t = 2r - q, Zr = Nr/(r-q)
-      NrCount[r] <- mutate(NrCount[r], Zr = (Nr/(c - NrCount[r-1,1])))
-    }
-    else{                                      #Zr=Nr/(0.5(t-q))
-      NrCount[r] <- mutate(NrCount[r], 
-                           Zr = (2*Nr/(NrCount[r+1,1]) - NrCount[r-1,1]))
-    }
-  
-}
-
-
-findZr <- function(NrCount){
-  size <- nrow(NrCount)
   Zr <- as.numeric()
   for(r in 1:size){ 
-    if(r == 1){                               #q = 0, Zr = Nr/.5t or 2Nr/t
+    if(r == 1){                                    #q = 0, Zr = Nr/.5t or 2Nr/t
     Zr[r] <- 2*NrCount[r,2]/NrCount[r+1,1]
     }
-    else if (r == size){                      #t = 2r - q, Zr = Nr/(r-q)
+    else if (r == size){                           #t = 2r - q, Zr = Nr/(r-q)
       Zr[r] <- NrCount[r,2]/(NrCount[r,1] - NrCount[(r-1),1])
     }
-    else{                                      #Zr=Nr/(0.5(t-q))
+    else{                                          #Zr=Nr/(0.5(t-q))
       Zr[r] <- 2*NrCount[r,2]/(NrCount[r+1,1] - NrCount[r-1,1])
     }
   }
