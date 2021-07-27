@@ -147,7 +147,7 @@ biNr <- countNr(biCount)
 triNr <- countNr(triCount)
 quadNr <- countNr(quadCount)
 
-##Zr = Nr/.5(t-q)
+##Zr = Nr/.5(t-q) Average out Nr's
 findZr <- function(NrCount){
   size <- nrow(NrCount)
   Zr <- as.numeric()
@@ -179,4 +179,33 @@ uniFit <- LMZr(uniNr)
 biFit <- LMZr(biNr)
 triFit <- LMZr(triNr)
 quadFit <- LMZr(quadNr)
+
+##Update small counts (>6) using fit (Called n in data frames)
+updateCounts <- function(freq, nG){
+  ##Decide model based on N-gram
+  if(nG == 1){
+    model <- uniFit
+  }
+  if(nG == 2){
+    model <- biFit
+  }
+  if(nG == 3){
+    model <- triFit
+  }
+  if(nG ==4){
+    model <- quadFit
+  }
+  ##Iterate through data frame and discount small counts, r* = (r+1)(Nr+1)/Nr
+  for(i in 1:nrow(freq)){
+    if(freq$n[i] < 6){
+      freq$n[i] <- (freq$n[i] + 1) * 
+        exp(predict(model, newdata = data.frame(c = (freq$n[i] + 1)))) /
+        exp(predict(model, newdata = data.frame(c = freq$n[i])))
+    }
+  }
+  return(freq)
+}
+
+
+
 
