@@ -197,7 +197,7 @@ updateCounts <- function(freq, nG){
   }
   ##Iterate through data frame and discount small counts, r* = (r+1)(Nr+1)/Nr
   for(i in 1:nrow(freq)){
-    if(freq$n[i] < 6){
+    if(freq$n[i] < 8){
       freq$n[i] <- (freq$n[i] + 1) * 
         exp(predict(model, newdata = data.frame(c = (freq$n[i] + 1)))) /
         exp(predict(model, newdata = data.frame(c = freq$n[i])))
