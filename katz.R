@@ -133,6 +133,7 @@ if(!file.exists("counts.rda")) {
 
 ##Use Good-Turing Smoothing on the data
 ##Inspiration for code: https://rpubs.com/leomak/TextPrediction_Implementation
+##and https://en.wikipedia.org/wiki/Good%E2%80%93Turing_frequency_estimation
 
 #Count the frequency of frequencies (N_r)
 countNr <- function(freq) {
@@ -195,16 +196,45 @@ updateCounts <- function(freq, nG){
   if(nG ==4){
     model <- quadFit
   }
+  cStar <- as.numeric()
   ##Iterate through data frame and discount small counts, r* = (r+1)(Nr+1)/Nr
   for(i in 1:nrow(freq)){
     if(freq$n[i] < 8){
-      freq$n[i] <- (freq$n[i] + 1) * 
+      cStar[i] <- (freq$n[i] + 1) * 
         exp(predict(model, newdata = data.frame(c = (freq$n[i] + 1)))) /
         exp(predict(model, newdata = data.frame(c = freq$n[i])))
     }
+    else {                                 ##Large counts are considered reliable
+      cStar[i] <- freq$n[i]
+    }
   }
-  return(freq)
+
+  cbind(freq, cStar)
 }
+##Update counts
+uniCount <- updateCounts(uniCount, 1)
+biCount <- updateCounts(biCount, 2)
+triCount <- updateCounts(triCount, 3)
+quadCount <- updateCounts(quadCount, 4)
+
+
+##Create back-off model
+##Find d per Katz formula
+findD <- function(freq){
+  mutate(freq, d = cStar/n)
+}
+uniCount <- findD(uniCount)
+biCount <- findD(biCount)
+triCount <- findD(triCount)
+quadCount <- findD(quadCount)
+
+
+
+
+
+
+
+
 
 
 
