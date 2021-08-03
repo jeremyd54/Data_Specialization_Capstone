@@ -251,10 +251,13 @@ addProbs <- function(freq){ ##Adds probabilities to frequency data frames
   }
 }
 
-uniCount <- addProbs(uniCount)
-biCount <- biCount %>% addCWords() %>% addProbs()
-triCount <- triCount %>% addCWords() %>% addProbs()
-quadCount <- quadCount %>% addCWords() %>% addProbs()
+if(!file.exists("probs.rda")){
+  uniCount <- addProbs(uniCount)
+  biCount <- biCount %>% addCWords() %>% addProbs()
+  triCount <- triCount %>% addCWords() %>% addProbs()
+  quadCount <- quadCount %>% addCWords() %>% addProbs()
+  save(uniCount, biCount, triCount, quadCount, file = "probs.rda")
+} else(load("probs.rda"))
 
 
 
