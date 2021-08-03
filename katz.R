@@ -151,7 +151,7 @@ quadNr <- countNr(quadCount)
 ##Zr = Nr/.5(t-q) Average out Nr's
 findZr <- function(NrCount){
   size <- nrow(NrCount)
-  Zr <- as.numeric()
+  Zr <- numeric()
   for(r in 1:size){ 
     if(r == 1){                                    #q = 0, Zr = Nr/.5t or 2Nr/t
     Zr[r] <- 2*NrCount[r,2]/NrCount[r+1,1]
@@ -196,7 +196,7 @@ updateCounts <- function(freq, nG){
   if(nG ==4){
     model <- quadFit
   }
-  cStar <- as.numeric()
+  cStar <- numeric()
   ##Iterate through data frame and discount small counts, r* = (r+1)(Nr+1)/Nr
   for(i in 1:nrow(freq)){
     if(freq$n[i] < 8){
@@ -221,18 +221,40 @@ quadCount <- updateCounts(quadCount, 4)
 ##Create back-off model
 ##Find d per Katz formula
 findD <- function(freq){
-  mutate(freq, d = cStar/n)
+  mutate(freq, d = cStar / n)
 }
 uniCount <- findD(uniCount)
 biCount <- findD(biCount)
 triCount <- findD(triCount)
 quadCount <- findD(quadCount)
 
+##Add d value (from Katz formula), Counts for lead-up words, then calculates probability
+addCWords <- function(freq){
+  size <- nrow(freq)
+  cWords = numeric(length = size) ##Make zero column
+  for(i in 1:size){
+    if(cWords[i] == 0){           ##If not yet updated create index for lead up words
+      index <- grep(paste("^",freq$words[i],"$", sep = ""), freq$words)
+      x <- sum(freq$n[index])     ##Find sum of lead up words
+      cWords[index] <- x          ##Update cWords
+      }
+    }
+    cbind(freq, cWords)
+}
 
+addProbs <- function(freq){ ##Adds probabilities to frequency data frames
+  if(ncol(freq) == 4){      ##For uni-grams
+    mutate(freq, prob = n / sum(freq$n))
+  }
+  else{                     ##For all other
+    mutate(freq, prob = d * n / cWords)
+  }
+}
 
-
-
-
+uniCount <- addProbs(uniCount)
+biCount <- biCount %>% addCWords() %>% addProbs()
+triCount <- triCount %>% addCWords() %>% addProbs()
+quadCount <- quadCount %>% addCWords() %>% addProbs()
 
 
 
